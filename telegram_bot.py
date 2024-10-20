@@ -40,23 +40,6 @@ def verify_text(text, ai_client):
     return chat_completion.choices[0].message.content
     
 
-def get_ai_reply_old(text):
-    chat_completion = ai_client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "Ты - агрессивно настроенная женщина, желающая оскорбить клиента. Отвечай соответсвтующе.",
-            },
-            {
-                "role": "user",
-                "content": text
-            },
-        ],
-        model="gpt-4",
-        max_tokens=250
-    )
-    return chat_completion.choices[0].message.content
-
 def get_ai_reply(**kwargs):
     
     ai_client = kwargs.get('ai_client')
@@ -108,21 +91,17 @@ def get_ai_assistant(ai_client, ai_assistant_name=AI_ASSISTANT_NAME):
     return ai_client.beta.assistants.create(
         name=AI_ASSISTANT_NAME,
         instructions=AI_ASSISTANT_INSTRUCTION,
-        # tools=[{"type": "search"}],
         model=AI_MODEL_SMART,
     )
 
 
-# Создаем экземпляр бота
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-# Обрабатываем команду /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
     first_message_text = START_PROMPT
     bot.reply_to(message, first_message_text)
 
-# Обрабатываем любые текстовые сообщения
 @bot.message_handler(func=lambda message: True)
 def echo_message(message):
     ai_thread_id = get_ai_thread_id(message.chat.id, collection, ai_client)
@@ -143,15 +122,9 @@ mongo_client = MongoClient(MONGO_DB_CONNECTION_STRING)
 mongo_db = mongo_client.threads_database
 collection = mongo_db.chat_to_thread_collection
 
-
-
-
-# Создаем или находим существующего ассистента AI
 ai_client = OpenAI(api_key=OPENAI_API_KEY)
 ai_assistant = get_ai_assistant(ai_client)
 
 
-# Запускаем бота
 if __name__ == '__main__':
-    # bot.polling(none_stop=True)
     bot.infinity_polling()

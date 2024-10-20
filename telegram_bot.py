@@ -8,7 +8,6 @@ import dotenv
 import os
 from openai import OpenAI
 from pymongo import MongoClient
-import json
 
 from prompts import *
 

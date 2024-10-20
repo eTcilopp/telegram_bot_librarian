@@ -126,4 +126,5 @@ ai_assistant = get_ai_assistant(ai_client)
 
 
 if __name__ == '__main__':
-    bot.infinity_polling()
+    # bot.infinity_polling()
+    bot.polling(none_stop=True)

@@ -1,13 +1,15 @@
 ########################################
 # Telegram bot
 # t.me/book_wise_helper_bot
-#
+# Deployed to .228
 ########################################
 import telebot
 import dotenv
 import os
 from openai import OpenAI
 from pymongo import MongoClient
+import logging
+import time
 
 from prompts import *
 
@@ -93,8 +95,20 @@ def get_ai_assistant(ai_client, ai_assistant_name=AI_ASSISTANT_NAME):
         model=AI_MODEL_SMART,
     )
 
+def start_bot():
+    while True:
+        try:
+            bot.polling(none_stop=True, interval=1, timeout=60)
+        except Exception as e:
+            logging.error(f"Error occurred: {e}", exc_info=True)
+            bot.stop_polling()
+            time.sleep(15) 
+
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
+
+logging.basicConfig(filename='bot_errors.log', level=logging.ERROR,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
@@ -126,9 +140,4 @@ ai_assistant = get_ai_assistant(ai_client)
 
 
 if __name__ == '__main__':
-    # bot.infinity_polling()
-    while True:
-        try:
-            bot.polling(none_stop=True)
-        except:
-            pass
+    start_bot()

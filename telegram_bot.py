@@ -39,7 +39,6 @@ def verify_text(text, ai_client):
         model=AI_MODEL_SIMPLE,
     )
     return chat_completion.choices[0].message.content
-    
 
 def get_ai_reply(**kwargs):
     
@@ -47,6 +46,7 @@ def get_ai_reply(**kwargs):
     ai_assistant = kwargs.get('ai_assistant')
     ai_thread_id = kwargs.get('ai_thread_id')
     text = kwargs.get('text')
+    logging.info(f'Received request: {text}')
     instructions = kwargs.get('instructions')
     
     message = ai_client.beta.threads.messages.create(
@@ -69,6 +69,8 @@ def get_ai_reply(**kwargs):
     )
 
     text_response = messages.data[0].content[0].text.value
+    
+    logging.info(f'Generated response: {text_response}')
   
 
     return text_response
@@ -96,19 +98,28 @@ def get_ai_assistant(ai_client, ai_assistant_name=AI_ASSISTANT_NAME):
     )
 
 def start_bot():
+    logging.info('Started Bot')
+    print('Started Bot')
+    retry_delay = 15
+    max_delay = 300
     while True:
         try:
             bot.polling(none_stop=True, interval=1, timeout=60)
+        except KeyboardInterrupt:
+            logging.info("Bot stopped manually.")
+            break
         except Exception as e:
             logging.error(f"Error occurred: {e}", exc_info=True)
             bot.stop_polling()
-            time.sleep(15) 
+            time.sleep(retry_delay)
+            retry_delay = min(max_delay, retry_delay * 2)  # Exponential backoff
 
+
+
+logging.basicConfig(filename='bot_errors.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
-
-logging.basicConfig(filename='bot_errors.log', level=logging.ERROR,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):

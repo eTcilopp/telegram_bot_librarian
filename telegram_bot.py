@@ -104,7 +104,8 @@ def start_bot():
     max_delay = 300
     while True:
         try:
-            bot.polling(none_stop=True, interval=1, timeout=60)
+            # bot.polling(none_stop=True, interval=1, timeout=60)
+            bot.polling(interval=2, long_polling=True)
         except KeyboardInterrupt:
             logging.info("Bot stopped manually.")
             break
